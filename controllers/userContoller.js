@@ -1,9 +1,9 @@
-const express = require('express');
-const User = require('./../models/userModel');
-const catchAsync = require('./../utils/catchAsync');
-const AppError = require('./../utils/appError');
-const cathAsync = require('./../utils/catchAsync');
-const factory = require('./../controllers/handlerFactory');
+// const express = require('express');
+const User = require('../models/userModel');
+const catchAsync = require('../utils/catchAsync');
+const AppError = require('../utils/appError');
+const cathAsync = require('../utils/catchAsync');
+const factory = require('./handlerFactory');
 
 const filterObj = (obj, ...allowedFields) =>
   Object.keys(obj)

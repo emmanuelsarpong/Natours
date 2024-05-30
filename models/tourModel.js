@@ -20,7 +20,6 @@ const tourSchema = new mongoose.Schema(
         message: 'Tour name must only contain characters, spaces, or hyphens',
       },
     },
-
     slug: String,
     duration: {
       type: Number,
@@ -98,7 +97,7 @@ const tourSchema = new mongoose.Schema(
       address: String,
       description: String,
     },
-    location: [
+    locations: [
       {
         type: {
           type: String,
@@ -124,7 +123,7 @@ const tourSchema = new mongoose.Schema(
   },
 );
 
-tourSchema.index({ price: 1, ratingAverage: -1 });
+tourSchema.index({ price: 1, ratingsAverage: -1 });
 tourSchema.index({ slug: 1 });
 tourSchema.index({ startLocation: '2dsphere' });
 
@@ -144,21 +143,6 @@ tourSchema.pre('save', function (next) {
   this.slug = slugify(this.name, { lower: true });
   next();
 });
-
-// tourSchema.pre('save', async function (next) {
-//   const guidesPromises = this.guides.map(async (id) => await User.findById(id));
-//   this.guides = await Promises.all(guidesPromises);
-//   next();
-// });
-
-// tourSchema.pre('save', function (next) {
-//   console.log('Will save document...');
-// });
-
-// tourSchema.post('save', function (doc, next) {
-//   console.log(doc);
-//   next();
-// });
 
 // Query middleware
 tourSchema.pre(/^find/, function (next) {
@@ -180,12 +164,6 @@ tourSchema.pre(/^find/, function (next) {
   });
   next();
 });
-
-// Aggregation middleware
-// tourSchema.pre('aggregate', function (next) {
-//   this.pipeline().unshift({ $match: { secretTour: { $ne: true } } });
-//   next();
-// });
 
 const Tour = mongoose.model('Tour', tourSchema);
 

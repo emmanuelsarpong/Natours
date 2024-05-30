@@ -13,8 +13,6 @@ const tourRouter = require('./routes/tourRoutes');
 const userRouter = require('./routes/userRoutes');
 const reviewRouter = require('./routes/reviewRoutes');
 const viewRouter = require('./routes/viewRoutes');
-const { whitelist } = require('validator');
-// const { findLastKey } = require('lodash-es');
 
 const app = express();
 
@@ -26,10 +24,43 @@ app.use(express.static(path.join(__dirname, 'public')));
 
 // 1) GLOBAL MIDDLEWARES
 // Set security HTTP headers
-app.use(helmet());
+app.use(
+  helmet({
+    contentSecurityPolicy: {
+      directives: {
+        defaultSrc: ["'self'"],
+        scriptSrc: [
+          "'self'",
+          'https://api.mapbox.com',
+          "'unsafe-inline'",
+          'blob:',
+        ],
+        styleSrc: [
+          "'self'",
+          'https://api.mapbox.com',
+          'https://fonts.googleapis.com',
+          "'unsafe-inline'",
+        ],
+        imgSrc: ["'self'", 'data:', 'https://api.mapbox.com'],
+        connectSrc: [
+          "'self'",
+          'https://api.mapbox.com',
+          'https://events.mapbox.com',
+        ],
+        fontSrc: [
+          "'self'",
+          'https://fonts.gstatic.com',
+          'https://fonts.googleapis.com',
+        ],
+        workerSrc: ["'self'", 'blob:'],
+        objectSrc: ["'none'"],
+        upgradeInsecureRequests: [],
+      },
+    },
+  }),
+);
 
 // Development logging
-console.log(process.env.NODE_ENV);
 if (process.env.NODE_ENV === 'development') {
   app.use(morgan('dev'));
 }
@@ -37,8 +68,8 @@ if (process.env.NODE_ENV === 'development') {
 // Limit requests from same API
 const limiter = rateLimit({
   max: 100,
-  windowMS: 60 * 60 * 1000,
-  message: 'Too many requrest from this IP, please try again in an hour!',
+  windowMs: 60 * 60 * 1000, // Corrected from windowMS to windowMs
+  message: 'Too many requests from this IP, please try again in an hour!',
 });
 
 app.use('/api', limiter);
@@ -68,7 +99,6 @@ app.use(
 // Test middleware
 app.use((req, res, next) => {
   req.requestTime = new Date().toISOString();
-  console.log(req.headers);
   next();
 });
 

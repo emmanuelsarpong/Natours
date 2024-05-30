@@ -1,8 +1,8 @@
-const { async } = require('regenerator-runtime');
-const Tour = require('./../models/tourModel');
-const catchAsync = require('./../utils/catchAsync');
-const AppError = require('./../utils/appError');
-const factory = require('./../controllers/handlerFactory');
+// const { async } = require('regenerator-runtime');
+const Tour = require('../models/tourModel');
+const catchAsync = require('../utils/catchAsync');
+const AppError = require('../utils/appError');
+const factory = require('./handlerFactory');
 
 exports.aliasTopTours = (req, res, next) => {
   req.query.limit = '5';
@@ -99,8 +99,8 @@ exports.getToursWithin = catchAsync(async (req, res, next) => {
   if (
     !lat ||
     !lng ||
-    isNaN(lat) ||
-    isNaN(lng) ||
+    Number.isNaN(lat) ||
+    Number.isNaN(lng) ||
     lat < -90 ||
     lat > 90 ||
     lng < -180 ||
@@ -116,7 +116,7 @@ exports.getToursWithin = catchAsync(async (req, res, next) => {
     unit === 'mi' ? parsedDistance / 3963.2 : parsedDistance / 6378.1;
 
   // Validate the parsed distance and calculated radius
-  if (isNaN(parsedDistance) || parsedDistance <= 0 || radius <= 0) {
+  if (Number.isNaN(parsedDistance) || parsedDistance <= 0 || radius <= 0) {
     return next(
       new AppError(
         'Please provide a valid positive distance and correct unit (mi or km).',
@@ -148,8 +148,8 @@ exports.getDistances = catchAsync(async (req, res, next) => {
   if (
     !lat ||
     !lng ||
-    isNaN(lat) ||
-    isNaN(lng) ||
+    Number.isNaN(lat) ||
+    Number.isNaN(lng) ||
     lat < -90 ||
     lat > 90 ||
     lng < -180 ||
