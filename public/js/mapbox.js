@@ -12,9 +12,10 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     if (typeof mapboxgl !== 'undefined') {
-      mapboxgl.accessToken = 'pk.eyJ1IjoiZW1tYW51ZWxzYXJwb25nIiwiYSI6ImNsd3FzbGFlNzA1cTUyanEwNHZ3eGdvc2EifQ._xg7sgSfctLjH3pG8bDS6Q';
+      mapboxgl.accessToken =
+        'pk.eyJ1IjoiZW1tYW51ZWxzYXJwb25nIiwiYSI6ImNsd3FzbGFlNzA1cTUyanEwNHZ3eGdvc2EifQ._xg7sgSfctLjH3pG8bDS6Q';
 
-      var map = new mapboxgl.Map({
+      const map = new mapboxgl.Map({
         container: 'map',
         style: 'mapbox://styles/mapbox/light-v10',
       });
@@ -23,8 +24,16 @@ document.addEventListener('DOMContentLoaded', () => {
 
       // Add markers to the map
       locations.forEach((loc) => {
-        if (loc.coordinates && Array.isArray(loc.coordinates) && loc.coordinates.length === 2) {
+        console.log('Processing location:', loc);
+
+        if (
+          loc.coordinates &&
+          Array.isArray(loc.coordinates) &&
+          loc.coordinates.length === 2
+        ) {
           const [lng, lat] = loc.coordinates;
+          console.log('Coordinates:', lng, lat);
+
           if (!isNaN(lng) && !isNaN(lat)) {
             // Create marker
             const el = document.createElement('div');
@@ -37,6 +46,12 @@ document.addEventListener('DOMContentLoaded', () => {
             })
               .setLngLat([lng, lat])
               .addTo(map);
+
+            console.log(`Added marker at [${lng}, ${lat}]`);
+
+            new mapboxgl.Popup()
+              .setLngLat(loc.coordinates)
+              .setHTML(`<p> ${loc.day}: ${loc.description}<o>`);
 
             // Extend map bounds to include current location
             bounds.extend([lng, lat]);
