@@ -7,12 +7,16 @@
     "start": "nodemon server.js",
     "start:prod": "NODE_ENV=production nodemon server.js",
     "lint": "eslint .",
-    "debug": "ndb server.js"
+    "debug": "ndb server.js",
+    "watch:js": "parcel watch ./public/js/index.js --out-dir ./public/js --out-file bundle.js",
+    "build:js": "parcel watch ./public/js/index.js --out-dir ./public/js --out-file bundle.js"
   },
   "author": "Emmanuel Sarpong",
   "license": "ISC",
   "dependencies": {
+    "@babel/polyfill": "^7.12.1",
     "@mapbox/mapbox-sdk": "^0.16.0",
+    "axios": "^1.7.2",
     "bcryptjs": "^2.4.3",
     "cookie-parser": "^1.4.6",
     "cors": "^2.8.5",
@@ -27,6 +31,7 @@
     "mongoose": "^5.13.22",
     "morgan": "^1.10.0",
     "nodemailer": "^6.9.13",
+    "parcel": "^2.12.0",
     "pug": "^3.0.2",
     "slugify": "^1.6.6",
     "validator": "^13.11.0",
@@ -48,6 +53,7 @@
     "eslint-plugin-react-hooks": "^4.6.0",
     "ndb": "^1.1.5",
     "nodemon": "^3.0.2",
+    "parcel-bundler": "^1.12.5",
     "prettier": "^3.2.5",
     "webpack": "^5.92.1",
     "webpack-cli": "^5.1.4"
