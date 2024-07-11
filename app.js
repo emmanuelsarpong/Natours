@@ -6,8 +6,8 @@ const helmet = require('helmet');
 const mongoSanitize = require('express-mongo-sanitize');
 const xss = require('xss-clean');
 const hpp = require('hpp');
-const cookieParser = require('cookie-parser'); // Ensure this is included
-
+const cookieParser = require('cookie-parser');
+const cors = require('cors'); // Add this line
 const AppError = require('./utils/appError');
 const globalErrorHandler = require('./controllers/errorController');
 const tourRouter = require('./routes/tourRoutes');
@@ -24,6 +24,9 @@ app.set('views', path.join(__dirname, 'views'));
 app.use(express.static(path.join(__dirname, 'public')));
 
 // 1) GLOBAL MIDDLEWARES
+// Enable CORS
+app.use(cors()); // Add this line
+
 // Set security HTTP headers
 app.use(
   helmet({
@@ -35,6 +38,7 @@ app.use(
           'https://api.mapbox.com',
           "'unsafe-inline'",
           'blob:',
+          'https://cdnjs.cloudflare.com',
         ],
         styleSrc: [
           "'self'",
@@ -45,6 +49,7 @@ app.use(
         imgSrc: ["'self'", 'data:', 'https://api.mapbox.com'],
         connectSrc: [
           "'self'",
+          'http://127.0.0.1:3000',
           'https://api.mapbox.com',
           'https://events.mapbox.com',
         ],
@@ -101,6 +106,7 @@ app.use(
 // Test middleware
 app.use((req, res, next) => {
   req.requestTime = new Date().toISOString();
+  console.log(req.cookies);
   next();
 });
 
