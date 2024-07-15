@@ -54,7 +54,14 @@ exports.getAccount = (req, res) => {
   });
 };
 
+// const catchAsync = require('../utils/catchAsync');
+// const User = require('../models/userModel');
+// const AppError = require('../utils/appError');
+
 exports.updateUserData = catchAsync(async (req, res, next) => {
+  console.log('User ID:', req.user.id); // Log user ID
+  console.log('Request Body:', req.body); // Log request body
+
   const updatedUser = await User.findByIdAndUpdate(
     req.user.id,
     {
@@ -66,6 +73,8 @@ exports.updateUserData = catchAsync(async (req, res, next) => {
       runValidators: true,
     },
   );
+
+  console.log('Updated User:', updatedUser); // Log updated user
 
   res.status(200).render('account', {
     title: 'Your account',
