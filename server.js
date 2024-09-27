@@ -1,6 +1,10 @@
 const mongoose = require('mongoose');
 const dotenv = require('dotenv');
 const logger = require('./logger');
+const axios = require('axios');
+
+// Set Axios defaults
+axios.defaults.withCredentials = true;
 
 process.on('uncaughtException', (err) => {
   logger.error('UNCAUGHT EXCEPTION 💥 Shutting down...');
@@ -34,7 +38,7 @@ mongoose
 // Start the server
 const port = process.env.PORT || 3000;
 const server = app.listen(port, () => {
-  logger.info(`Listening on http://localhost:${port}/`);
+  logger.info(`Listening on http://localhost:${port}`);
 });
 
 // Handle unhandled promise rejections

@@ -2,7 +2,6 @@ const path = require('path');
 const express = require('express');
 const morgan = require('morgan');
 const rateLimit = require('express-rate-limit');
-const helmet = require('helmet');
 const mongoSanitize = require('express-mongo-sanitize');
 const xss = require('xss-clean');
 const hpp = require('hpp');
@@ -17,6 +16,19 @@ const viewRouter = require('./routes/viewRoutes');
 
 const app = express();
 
+// CORS Configuration
+app.use(
+  cors({
+    origin: 'http://localhost:3000',
+    credentials: true, // Only include if sending cookies/authentication with requests
+    methods: ['GET', 'POST', 'PATCH', 'DELETE', 'OPTIONS'],
+    allowedHeaders: ['Content-Type', 'Authorization'],
+  }),
+);
+
+// Enable pre-flight requests for all routes
+app.options('*', cors());
+
 // Set view engine
 app.set('view engine', 'pug');
 app.set('views', path.join(__dirname, 'views'));
@@ -24,66 +36,19 @@ app.set('views', path.join(__dirname, 'views'));
 // Serve static files from the 'public' directory
 app.use(express.static(path.join(__dirname, 'public')));
 
-// Enable CORS
-app.use(cors());
-
-// Set security HTTP headers
-// app.use(
-//   helmet({
-//     contentSecurityPolicy: {
-//       directives: {
-//         defaultSrc: ["'self'"],
-//         scriptSrc: [
-//           "'self'",
-//           'https://api.mapbox.com',
-//           "'unsafe-inline'",
-//           'blob:',
-//           'https://cdnjs.cloudflare.com',
-//         ],
-//         styleSrc: [
-//           "'self'",
-//           'https://api.mapbox.com',
-//           'https://fonts.googleapis.com',
-//           "'unsafe-inline'",
-//         ],
-//         imgSrc: ["'self'", 'data:', 'https://api.mapbox.com'],
-//         connectSrc: [
-//           "'self'",
-//           'http://127.0.0.1:3000',
-//           'https://api.mapbox.com',
-//           'https://events.mapbox.com',
-//         ],
-//         fontSrc: [
-//           "'self'",
-//           'https://fonts.gstatic.com',
-//           'https://fonts.googleapis.com',
-//         ],
-//         workerSrc: ["'self'", 'blob:'],
-//         objectSrc: ["'none'"],
-//         upgradeInsecureRequests: [],
-//       },
-//     },
-//   }),
-// );
-
-// Example middleware to ignore requests for *.js.map
-app.get('*.js.map', (req, res, next) => {
-  console.log('Ignoring request for source map:', req.path);
-  res.status(404).end(); // Respond with 404 Not Found for *.js.map requests
-});
-
 // Development logging
 if (process.env.NODE_ENV === 'development') {
-  app.use(morgan('dev'));
+  app.use(morgan('dev')); // Logs in development mode
+} else if (process.env.NODE_ENV === 'production') {
+  app.use(morgan('combined')); // More detailed logs in production mode
 }
 
-// Limit requests from same API
+// Limit requests from same IP
 const limiter = rateLimit({
   max: 100,
-  windowMs: 60 * 60 * 1000,
+  windowMs: 60 * 60 * 1000, // 1 hour
   message: 'Too many requests from this IP, please try again in an hour!',
 });
-
 app.use('/api', limiter);
 
 // Body parser, reading data from the body into req.body
@@ -110,11 +75,16 @@ app.use(
   }),
 );
 
-// Test middleware
+// Test middleware for logging request time and routes
 app.use((req, res, next) => {
   req.requestTime = new Date().toISOString();
-  // console.log(req.cookies);
+  console.log(`${req.method} ${req.url} at ${req.requestTime}`);
   next();
+});
+
+// Middleware to handle missing source map requests
+app.get('*.js.map', (req, res) => {
+  res.status(404).send('Source map not found');
 });
 
 // Routes
@@ -132,10 +102,16 @@ app.use('/api/v1/reviews', reviewRouter);
 
 // Error handling for unmatched routes
 app.all('*', (req, res, next) => {
+  console.error(`Unmatched route: ${req.originalUrl}`);
   next(new AppError(`Can't find ${req.originalUrl} on this server!`, 404));
 });
 
-// Global error handler
+// Middleware to handle missing source map requests
+app.get('*.js.map', (req, res) => {
+  res.status(404).send('Source map not found');
+});
+
+// Use the global error handler from errorController
 app.use(globalErrorHandler);
 
 module.exports = app;

@@ -1,10 +1,10 @@
 const crypto = require('crypto');
 const { promisify } = require('util');
 const jwt = require('jsonwebtoken');
-const User = require('./../models/userModel');
-const catchAsync = require('./../utils/catchAsync');
-const AppError = require('./../utils/appError');
-const Email = require('./../utils/email');
+const User = require('../models/userModel');
+const catchAsync = require('../utils/catchAsync');
+const AppError = require('../utils/appError');
+const Email = require('../utils/email');
 
 const signToken = (id) => {
   return jwt.sign({ id }, process.env.JWT_SECRET, {
@@ -15,15 +15,13 @@ const signToken = (id) => {
 const createSendToken = (user, statusCode, req, res) => {
   const token = signToken(user._id);
 
-  const cookieOptions = {
+  res.cookie('jwt', token, {
     expires: new Date(
       Date.now() + process.env.JWT_COOKIE_EXPIRES_IN * 24 * 60 * 60 * 1000,
     ),
     httpOnly: true,
-    secure: req.secure || req.headers['x-forwarded-proto'] === 'https',
-  };
-
-  res.cookie('jwt', token, cookieOptions);
+    secure: req.secure || req.headers['x-forwarded-proto'] === 'https', // Ensure secure cookies in production
+  });
 
   // Remove password from output
   user.password = undefined;
@@ -72,14 +70,14 @@ exports.login = catchAsync(async (req, res, next) => {
 
 exports.logout = (req, res) => {
   res.cookie('jwt', 'loggedout', {
-    expires: new Date(Date.now() + 10 * 1000),
+    expires: new Date(Date.now() + 10 * 1000), // Log out quickly by expiring the token
     httpOnly: true,
   });
   res.status(200).json({ status: 'success' });
 };
 
 exports.protect = catchAsync(async (req, res, next) => {
-  // 1) Getting token and check of it's there
+  // 1) Getting token and check if it's there
   let token;
   if (
     req.headers.authorization &&
@@ -127,24 +125,24 @@ exports.protect = catchAsync(async (req, res, next) => {
 exports.isLoggedIn = async (req, res, next) => {
   if (req.cookies.jwt) {
     try {
-      // Verify token
+      // 1) verify token
       const decoded = await promisify(jwt.verify)(
         req.cookies.jwt,
         process.env.JWT_SECRET,
       );
 
-      // Check if user still exists
+      // 2) Check if user still exists
       const currentUser = await User.findById(decoded.id);
       if (!currentUser) {
         return next();
       }
 
-      // Check if user changed password after the token was issued
+      // 3) Check if user changed password after the token was issued
       if (currentUser.changedPasswordAfter(decoded.iat)) {
         return next();
       }
 
-      // There is a logged in user
+      // THERE IS A LOGGED IN USER
       res.locals.user = currentUser;
       return next();
     } catch (err) {
@@ -162,7 +160,6 @@ exports.restrictTo = (...roles) => {
         new AppError('You do not have permission to perform this action', 403),
       );
     }
-
     next();
   };
 };
@@ -180,7 +177,9 @@ exports.forgotPassword = catchAsync(async (req, res, next) => {
 
   // 3) Send it to user's email
   try {
-    const resetURL = `${req.protocol}://${req.get('host')}/api/v1/users/resetPassword/${resetToken}`;
+    const resetURL = `${req.protocol}://${req.get(
+      'host',
+    )}/api/v1/users/resetPassword/${resetToken}`;
     await new Email(user, resetURL).sendPasswordReset();
 
     res.status(200).json({
@@ -193,10 +192,8 @@ exports.forgotPassword = catchAsync(async (req, res, next) => {
     await user.save({ validateBeforeSave: false });
 
     return next(
-      new AppError(
-        'There was an error sending the email. Try again later!',
-        500,
-      ),
+      new AppError('There was an error sending the email. Try again later!'),
+      500,
     );
   }
 });
@@ -240,8 +237,7 @@ exports.updatePassword = catchAsync(async (req, res, next) => {
   // 3) If so, update password
   user.password = req.body.password;
   user.passwordConfirm = req.body.passwordConfirm;
-  await user.save();
-  // User.findByIdAndUpdate will NOT work as intended!
+  await user.save(); // User.findByIdAndUpdate will NOT work as intended!
 
   // 4) Log user in, send JWT
   createSendToken(user, 200, req, res);
