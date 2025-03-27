@@ -1,0 +1,21 @@
+header.header
+  .container
+    .header__logo
+      a(href='/')
+        img(src='/img/logo-white.png' alt='Natours logo')
+    nav.nav
+      ul.nav__list
+        li.nav__item
+          a.nav__el(href='/') All tours
+        if user
+          li.nav__item
+            a.nav__el.nav__el--logout Logout
+          li.nav__item
+            a.nav__el(href='/me')
+              img.nav__user-img(src=`/img/users/${user.photo}` alt=`Photo of ${user.name}`)
+              span= user.name.split(' ')[0]
+        else
+          li.nav__item
+            a.nav__el(href='/login') Login
+          li.nav__item
+            a.nav__el.nav__el--cta(href='/signup') Signup

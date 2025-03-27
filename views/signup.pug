@@ -1,0 +1,23 @@
+extends layout
+
+block content
+  .form-container
+    form.form(method="POST" id="signup-form")
+      h2.heading-secondary.ma-bt-lg Create Your Account
+      .form__group
+        label(for="name") Name
+        input#name.form__input(type="text" name="name" placeholder="Your Name" required)
+      .form__group
+        label(for="email") Email address
+        input#email.form__input(type="email" name="email" placeholder="you@example.com" required)
+      .form__group
+        label(for="password") Password
+        input#password.form__input(type="password" name="password" placeholder="••••••••" required)
+      .form__group
+        label(for="passwordConfirm") Confirm Password
+        input#passwordConfirm.form__input(type="password" name="passwordConfirm" placeholder="••••••••" required)
+      .form__group
+        button.btn.btn--green(type="submit") Sign Up
+
+block scripts
+  script(type="module" src="/js/signup.js")
